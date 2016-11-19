@@ -1,0 +1,14 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+/*li {
+  font-size: 12px;
+  color: blue;
+}*/
+
+.delete-button {
+  color: red;
+}
