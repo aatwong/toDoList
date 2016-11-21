@@ -107,13 +107,53 @@ class ToDoItem extends Component {  //TODO: turn this stuff into an HTML table
         <td>{this.props.mytask}</td>
         <td>{this.props.myDueDate} </td>
         <td>{this.props.completeness ? 'Done' : 'Incomplete'}</td>
-        <td><button type="button" className="delete-button">Delete!</button></td>
+        <td><DeleteEntry taskToDelete={this.props.id}/></td>
       </tr>
     )
   }
 }
 
 /////////////////////////////////////////////
+// DELETE BUTTONS
+
+//parent component
+class DeleteEntry extends Component {
+
+  constructor(props) { //i tried setting state and then calling it later but that didnt work out   getinitialstate
+    super(props);
+    this.state = {
+      taskId : 0
+    }
+  }
+
+  render() {
+    return(
+      <DeleteButton whenClicked={this.deleteRequest.bind(this)} />
+
+    )
+  }
+  //var deleteId = {this.props.taskToDelete};
+  deleteRequest() {
+    console.log(`Deleting task number ${this.props.taskToDelete}`);
+    axios.request({
+      method: 'delete',
+      url: `http://localhost:3000/tasks/${this.props.taskToDelete}`
+    })
+  }
+}
+
+//child component
+class DeleteButton extends Component {
+  render() {
+    return (
+      <input type="button" onClick={this.props.whenClicked} className="delete-button" value="Delete" />
+    )
+  }
+}
+
+
+/////////////////////////////////////////////
+//FORM
 
 class ToDoForm extends Component {
 

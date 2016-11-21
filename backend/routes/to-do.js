@@ -1,7 +1,15 @@
 var express = require('express');
 var router = express.Router();
+var cors = require('cors');
 
 var Models = require('../models'); // db variable!!
+
+var corsOptions = {
+  "origin": "*",
+  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "preflightContinue": true
+};
+
 
 /* GET path: /tasks  */
 router.get('/', function(req, res, next) {   //Get request endpoint
@@ -20,15 +28,17 @@ router.post('/', function(req, res, next) {   //This is called a POST ENDPOINT
   });
 });
 
-module.exports = router;
+
 
 //DELETE path: /tasks
-router.delete('/', function(req, res, next) {  //This is the DELETE endpoint
+router.delete('/:id', cors(corsOptions), function(req, res, next) {  //This is the DELETE endpoint, ":id" indicates from the client request which task to delete
   Models.tasks.destroy({
     where: {
-      id: req.body.id
+      id: req.params.id  //params because id is passed in as a parameter in url
     }
   }).then(function(totalRowsDeleted) {
     res.send("successfuly deleted " + totalRowsDeleted);
   })
 })
+
+module.exports = router;
