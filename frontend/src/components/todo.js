@@ -100,6 +100,7 @@ class ToDoList extends Component {
 }
 
 class ToDoItem extends Component {  //TODO: turn this stuff into an HTML table
+
   render() {
     return (
       <tr>
@@ -114,7 +115,7 @@ class ToDoItem extends Component {  //TODO: turn this stuff into an HTML table
 }
 
 /////////////////////////////////////////////
-// DELETE BUTTONS
+// DELETE BUTTONS TODO: make the field disappear immediately on click
 
 //parent component
 class DeleteEntry extends Component {
