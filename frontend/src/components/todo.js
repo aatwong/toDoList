@@ -29,8 +29,8 @@ class ToDoData extends Component {
     loadTodoTask() {
       axios.get(this.props.url)
         .then(function (response) {
-          console.log('received response successfuly');
-          console.log(response);
+          // console.log('received response successfuly');
+          // console.log(response);
           this.setState({data: response.data.results, loaded: true});
         }.bind(this))  //bind so that "this" will refer to the component
         .catch(function (error) {
@@ -74,45 +74,164 @@ class ToDoData extends Component {
 class ToDoList extends Component {
   render() {
     let taskList = this.props.data.map(function(todo) {  //map function returns an arraylist of html
-      console.log(todo);
+      //console.log(todo);
       return (
-          <ToDoItem
-            key={todo.id}
-            id={todo.id}
-            mytask={todo.task}
-            myDueDate={todo.dueDate}
-            completeness={todo.isComplete}/>
+
+            <ToDoItem
+              key={todo.id}
+              id={todo.id}
+              mytask={todo.task}
+              myDueDate={todo.dueDate}
+              completeness={todo.isComplete}/>
+
       );
     });
     return(
       <table>
-        <tr>
-          <th>Entry</th>
-          <th>Task</th>
-          <th>Do By</th>
-          <th>Completion Status</th>
-          <th>Actions</th>
-        </tr>
-        {taskList}
+        <tbody>
+          <tr>
+            <th>Entry</th>
+            <th>Task</th>
+            <th>Do By</th>
+            <th>Completion Status</th>
+            <th>Actions</th>
+          </tr>
+          {taskList}
+        </tbody>
       </table>
     )
   }
 }
 
-class ToDoItem extends Component {  //TODO: turn this stuff into an HTML table
+class ToDoItem extends Component {
+
+  constructor(props) {
+    super(props);
+    this.handleComplete = this.handleComplete.bind(this);
+    this.state = {
+      isEditable : false,
+      task : this.props.mytask,
+      isComplete: this.props.completeness,
+      dueDate : this.props.myDueDate
+    };
+  }
+
+  handleComplete(event) {
+    //console.log(event.target.value);
+    let isComplete = !this.state.isComplete;
+    this.setState({isComplete : isComplete});
+    axios.request({
+      method: 'put',
+      url: `http://localhost:3000/tasks/complete/${this.props.id}`,
+      data : {
+        isComplete : isComplete
+      }
+    })
+  }
+
+  onClickEdit(event) {
+    this.setState({isEditable : !this.state.isEditable});
+  }
+
+  handleChange(event) {
+    let updateStateObj = {};
+    let key = event.target.name;
+    updateStateObj[key] = event.target.value;
+    this.setState(updateStateObj); //input is the target
+  }
+
+  onSaveEdit(event) {
+    axios.request({
+      method: 'put',
+      url: `http://localhost:3000/tasks/${this.props.id}`,
+      data : {
+        task : this.state.task,
+        dueDate : this.state.dueDate
+      }
+    }).then(function(response) {
+      this.setState({isEditable : false});
+    }.bind(this))
+  }
+
 
   render() {
+
+    let editDisplayTask = this.state.isEditable ? <td><input type="text" name="task" value={this.state.task} onChange={this.handleChange.bind(this)} /></td>
+                            : <td>{this.props.mytask}</td>
+    let editDisplayDueDate = this.state.isEditable ? <td><input type="datetime" name="dueDate" value={this.state.dueDate} onChange={this.handleChange.bind(this)} /></td>
+                            : <td>{this.props.myDueDate}</td>
+
+    let editDisplayDelete = this.state.isEditable ? <td><input type="button" className="edit-button" value="Save" onClick={this.onSaveEdit.bind(this)} /><input type="button" value="Cancel" onClick={this.onClickEdit.bind(this)}/></td>
+    : <td><input type="button" className="edit-button" value="Edit" onClick={this.onClickEdit.bind(this)}/><DeleteEntry taskToDelete={this.props.id} /></td>
+
+
     return (
       <tr>
         <td>{this.props.id}</td>
-        <td>{this.props.mytask}</td>
-        <td>{this.props.myDueDate} </td>
-        <td>{this.props.completeness ? 'Done' : 'Incomplete'}</td>
-        <td><DeleteEntry taskToDelete={this.props.id}/></td>
+        {editDisplayTask}
+        {editDisplayDueDate}
+        <td>
+          <input type="checkbox" onChange={this.handleComplete.bind(this)} />
+        </td>
+        {editDisplayDelete}
       </tr>
+
     )
   }
 }
+
+// class ToDoItem extends Component {  //TODO: turn this stuff into an HTML table
+//
+//   constructor(props) {
+//     super(props);
+//     this.state = {
+//       isEditable : false
+//     };
+//   }
+//
+//   display() {
+//     var displayType;
+//     if (this.state.isEditable == true) {
+//       displayType = <EditableItem
+//                         id={this.props.id}
+//                         mytask={this.props.mytask}
+//                         myduedate={this.props.myDueDate}
+//                         completeness={this.props.completeness}/>;
+//     } else {
+//       displayType =
+//         <tr>
+//           <td>{this.props.id}</td>
+//           <td>{this.props.mytask}</td>
+//           <td>{this.props.myDueDate} </td>
+//           <td>{this.props.completeness ? 'Done' : 'Incomplete'}</td>
+//           <td><DeleteEntry taskToDelete={this.props.id}/></td>
+//         </tr>;
+//     }
+//     return displayType;
+//   }
+//
+//
+//   render() {
+//     return (
+//       <div>{display()}<div>
+//     )
+//   }
+// }
+//
+// class EditableItem extends Component {
+//   render() {
+//     return (
+//       <tr>
+//         <td>{this.props.id}</td>
+//         <td>{this.props.mytask}</td>
+//         <td>{this.props.myduedate} </td>
+//         <td>{this.props.completeness ? 'Done' : 'Incomplete'}</td>
+//         <td><DeleteEntry taskToDelete={this.props.id}/></td>
+//       </tr>;
+//     )
+//   }
+// }
+
 
 /////////////////////////////////////////////
 // DELETE BUTTONS TODO: make the field disappear immediately on click
@@ -197,7 +316,7 @@ class ToDoForm extends Component {
 
   }
   render() {
-    console.log(this);
+    //console.log(this);
 
     return (
       <div className="inputForm">                        {/*TODO VALIDATE SUBMISSION */}

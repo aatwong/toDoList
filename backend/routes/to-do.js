@@ -4,12 +4,6 @@ var cors = require('cors');
 
 var Models = require('../models'); // db variable!!
 
-var corsOptions = {
-  "origin": "*",
-  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-  "preflightContinue": true
-};
-
 
 /* GET path: /tasks  */
 router.get('/', function(req, res, next) {   //Get request endpoint
@@ -28,16 +22,37 @@ router.post('/', function(req, res, next) {   //This is called a POST ENDPOINT
   });
 });
 
+// Edit Task and Date Endpoint
+router.put('/:id', function(req, res, next) {
+  Models.tasks.update({ task: req.body.task, dueDate: req.body.dueDate}, {
+      where: {
+        id: req.params.id  //params because id is passed in as a parameter in url
+      }
+    })
+    .then(function(totalRowsUpdated){
+    res.send("successfully updated " + totalRowsUpdated)
+  });
+});
 
+router.put('/complete/:id', function(req, res, next) {
+  Models.tasks.update({isComplete : req.body.isComplete}, {
+    where: {
+      id: req.params.id
+    }
+  })
+  .then(function(changedCompleteStatus) {
+    res.send("successfully changed isComplete status of " + changedCompleteStatus + " row");
+  });
+});
 
 //DELETE path: /tasks
-router.delete('/:id', cors(corsOptions), function(req, res, next) {  //This is the DELETE endpoint, ":id" indicates from the client request which task to delete
+router.delete('/:id', function(req, res, next) {  //This is the DELETE endpoint, ":id" indicates from the client request which task to delete
   Models.tasks.destroy({
     where: {
       id: req.params.id  //params because id is passed in as a parameter in url
     }
   }).then(function(totalRowsDeleted) {
-    res.send("successfuly deleted " + totalRowsDeleted);
+    res.send("successfully deleted " + totalRowsDeleted + " row");
   })
 })
 
